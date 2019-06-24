@@ -233,9 +233,15 @@ RUN cd ${RAPIDS_DIR} && ./clone.sh
 # Assume the build.sh script is present.
 # (this is done automatically when using 'rapidsdevtool.sh buildDockerImage',
 #  see rapidsdevtool.sh help for more details)
-RUN source activate rapids && cd ${RAPIDS_DIR} && \
-    ./build.sh rmm && \
-    cd rmm && git clean -xdff
+# Workaround so build.sh change is in docker image to allow testing build.sh
+RUN cd ${RAPIDS_DIR} && \
+    rm -rf rmm && \
+    git clone -b add_build_script https://github.com/mluukkainen/rmm.git && \
+    cd rmm && \
+    git submodule update --init --remote --recursive && \
+    source activate rapids && cd ${RAPIDS_DIR}/rmm && \
+    ./build.sh && \
+    git clean -xdff
 RUN source activate rapids && cd ${RAPIDS_DIR} && \
     ./build.sh custrings && \
     cd custrings && git clean -xdff
